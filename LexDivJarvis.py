@@ -5,7 +5,7 @@ from spellchecker import SpellChecker
 from statistics import stdev
 
 
-class LexDivModern:
+class LexDivJarvis:
     """Pass in a list of already tokenized words"""
     def __init__(self, in_list):
         self.in_list = in_list
@@ -25,8 +25,8 @@ class LexDivModern:
             output = numerator / float(n_window)
         return output
 
-    def get_mattr_rs(self):
-        return lex_div_operationalizations.get_mattr_rs(self.in_list, 50)
+    # def get_mattr_rs(self):
+    #     return lex_div_operationalizations.get_mattr_rs(self.in_list, 50)
 
     def get_mtld_wrap_Jarvis(self, target_ttr = 0.72):
         """
@@ -70,54 +70,54 @@ class LexDivModern:
         return (mtld_wrap, number_of_factors, mean(factor_lengths))
 
 
-    def get_mtld_wrap_Jarvis_debug(self, target_ttr = 0.72):
-        """
-        Get MTLD_wrap with Python code written by Scott Jarvis
-        Vidal, Karina & Jarvis, Scott. 2020. Effects of English-medium instruction on Spanish students’ proficiency and lexical diversity in English. Language Teaching Research. SAGE Publications 24(5). 568–587. (doi:10.1177/1362168818817945)
-        """
-        factor_lengths = []
-        e = set()
-        iterations = len(self.in_list)
-        with open("/Users/ekb5/Downloads/debug.csv", "w") as outfile:
-          outfile.write("start_index,len_factor,ttr\n")
-          for n in range(0, iterations):
-              tokens = 0
-              end_reached = False
-              for i in range(n, iterations):
-                  lemma = self.in_list[i]
-                  tokens += 1
-                  e.add(lemma)
-                  if tokens >= 10:
-                      types = float(len(e))
-                      ttr = float(types / tokens)
-                      if ttr < target_ttr:
-                          factor_lengths.append(tokens)
-                          outfile.write(f"{n},{tokens},{ttr}\n")
-                          e.clear()
-                          end_reached = True
-                          break
-              if end_reached == False:
-                  for i in range(0, iterations):
-                      lemma = self.in_list[i]
-                      tokens += 1
-                      e.add(lemma)
-                      if tokens >= 10:
-                          types = float(len(e))
-                          ttr = float(types / tokens)
-                          if ttr < target_ttr:
-                              factor_lengths.append(tokens)
-                              outfile.write(f"{n},{tokens},{ttr}\n")
-                              break
-                  break
-          sum_of_factors = sum(factor_lengths)
-          number_of_factors = float(len(factor_lengths))
-          mtld_wrap = float(sum_of_factors / number_of_factors)
-          # return mtld_wrap
-        return (mtld_wrap, number_of_factors, mean(factor_lengths))
+    # def get_mtld_wrap_Jarvis_debug(self, target_ttr = 0.72):
+    #     """
+    #     Get MTLD_wrap with Python code written by Scott Jarvis
+    #     Vidal, Karina & Jarvis, Scott. 2020. Effects of English-medium instruction on Spanish students’ proficiency and lexical diversity in English. Language Teaching Research. SAGE Publications 24(5). 568–587. (doi:10.1177/1362168818817945)
+    #     """
+    #     factor_lengths = []
+    #     e = set()
+    #     iterations = len(self.in_list)
+    #     with open("/Users/ekb5/Downloads/debug.csv", "w") as outfile:
+    #       outfile.write("start_index,len_factor,ttr\n")
+    #       for n in range(0, iterations):
+    #           tokens = 0
+    #           end_reached = False
+    #           for i in range(n, iterations):
+    #               lemma = self.in_list[i]
+    #               tokens += 1
+    #               e.add(lemma)
+    #               if tokens >= 10:
+    #                   types = float(len(e))
+    #                   ttr = float(types / tokens)
+    #                   if ttr < target_ttr:
+    #                       factor_lengths.append(tokens)
+    #                       outfile.write(f"{n},{tokens},{ttr}\n")
+    #                       e.clear()
+    #                       end_reached = True
+    #                       break
+    #           if end_reached == False:
+    #               for i in range(0, iterations):
+    #                   lemma = self.in_list[i]
+    #                   tokens += 1
+    #                   e.add(lemma)
+    #                   if tokens >= 10:
+    #                       types = float(len(e))
+    #                       ttr = float(types / tokens)
+    #                       if ttr < target_ttr:
+    #                           factor_lengths.append(tokens)
+    #                           outfile.write(f"{n},{tokens},{ttr}\n")
+    #                           break
+    #               break
+    #       sum_of_factors = sum(factor_lengths)
+    #       number_of_factors = float(len(factor_lengths))
+    #       mtld_wrap = float(sum_of_factors / number_of_factors)
+    #       # return mtld_wrap
+    #     return (mtld_wrap, number_of_factors, mean(factor_lengths))
 
 
-    def get_mtld_wrap_jarvis_rs(self):
-        return lex_div_operationalizations.get_mtld_wrap_jarvis_rs(self.in_list)
+    # def get_mtld_wrap_jarvis_rs(self):
+    #     return lex_div_operationalizations.get_mtld_wrap_jarvis_rs(self.in_list)
 
     ### helper functions for HDD ###
     ### lifted from Kris Kyle's lexical_diversity Python module:
@@ -175,5 +175,28 @@ class LexDivModern:
         std_dev = stdev(values)
         return std_dev
 
+    def get_distance_between_tokens(self):
+        """Return average distance in N words between tokens of the same type"""
+        wd_index = {}
+        stopwords = ["THE", "AND"] # probably replace this with a legit stopword list (e.g. NLTK or stopwords module)
+        for i in range(len(self.in_list)):
+            cur_wd = self.in_list[i]
+            if cur_wd not in stopwords:
+                # print(cur_wd)
+                if cur_wd not in wd_index:
+                    wd_index[cur_wd] = [i]
+                else:
+                    wd_index[cur_wd].append(i)
+
+        numerator = 0
+        num_of_diff = 0
+        for k, v in wd_index.items():
+            if len(v)>1:
+                for sub_i in range(len(v)):
+                    if sub_i > 0:
+                        numerator += (v[sub_i] - v[sub_i - 1])
+                        num_of_diff += 1
+        
+        return numerator / num_of_diff
 
 ### end class definition ###
