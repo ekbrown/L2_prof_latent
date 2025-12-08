@@ -7,40 +7,37 @@ from statistics import stdev
 
 class LexDivJarvis:
     """Pass in a list of already tokenized words"""
-    def __init__(self, in_list):
-        self.in_list = in_list
+    def __init__(self, intokens):
+        self.intokens = intokens
 
     def get_ttr(self, in_wds):
         return len(set(in_wds)) / len(in_wds)
 
     def get_mattr(self, window_span = 50):
-        n_wds = len(self.in_list)
+        n_wds = len(self.intokens)
         if n_wds <= window_span:
-            output = self.get_ttr(self.in_list)
+            output = self.get_ttr(self.intokens)
         else:
             numerator = 0.0
             n_window = n_wds - window_span + 1
             for i in range(n_window):
-                numerator += self.get_ttr(self.in_list[i : i+window_span])
+                numerator += self.get_ttr(self.intokens[i : i+window_span])
             output = numerator / float(n_window)
         return output
 
-    # def get_mattr_rs(self):
-    #     return lex_div_operationalizations.get_mattr_rs(self.in_list, 50)
-
-    def get_mtld_wrap_Jarvis(self, target_ttr = 0.72):
+    def get_mtld_wrap(self, target_ttr = 0.72):
         """
         Get MTLD_wrap with Python code written by Scott Jarvis
         Vidal, Karina & Jarvis, Scott. 2020. Effects of English-medium instruction on Spanish students’ proficiency and lexical diversity in English. Language Teaching Research. SAGE Publications 24(5). 568–587. (doi:10.1177/1362168818817945)
         """
         factor_lengths = []
         e = set()
-        iterations = len(self.in_list)
+        iterations = len(self.intokens)
         for n in range(0, iterations):
             tokens = 0
             end_reached = False
             for i in range(n, iterations):
-                lemma = self.in_list[i]
+                lemma = self.intokens[i]
                 tokens += 1
                 e.add(lemma)
                 if tokens >= 10:
@@ -53,7 +50,7 @@ class LexDivJarvis:
                         break
             if end_reached == False:
                 for i in range(0, iterations):
-                    lemma = self.in_list[i]
+                    lemma = self.intokens[i]
                     tokens += 1
                     e.add(lemma)
                     if tokens >= 10:
@@ -68,56 +65,6 @@ class LexDivJarvis:
         mtld_wrap = float(sum_of_factors / number_of_factors)
         # return mtld_wrap
         return (mtld_wrap, number_of_factors, mean(factor_lengths))
-
-
-    # def get_mtld_wrap_Jarvis_debug(self, target_ttr = 0.72):
-    #     """
-    #     Get MTLD_wrap with Python code written by Scott Jarvis
-    #     Vidal, Karina & Jarvis, Scott. 2020. Effects of English-medium instruction on Spanish students’ proficiency and lexical diversity in English. Language Teaching Research. SAGE Publications 24(5). 568–587. (doi:10.1177/1362168818817945)
-    #     """
-    #     factor_lengths = []
-    #     e = set()
-    #     iterations = len(self.in_list)
-    #     with open("/Users/ekb5/Downloads/debug.csv", "w") as outfile:
-    #       outfile.write("start_index,len_factor,ttr\n")
-    #       for n in range(0, iterations):
-    #           tokens = 0
-    #           end_reached = False
-    #           for i in range(n, iterations):
-    #               lemma = self.in_list[i]
-    #               tokens += 1
-    #               e.add(lemma)
-    #               if tokens >= 10:
-    #                   types = float(len(e))
-    #                   ttr = float(types / tokens)
-    #                   if ttr < target_ttr:
-    #                       factor_lengths.append(tokens)
-    #                       outfile.write(f"{n},{tokens},{ttr}\n")
-    #                       e.clear()
-    #                       end_reached = True
-    #                       break
-    #           if end_reached == False:
-    #               for i in range(0, iterations):
-    #                   lemma = self.in_list[i]
-    #                   tokens += 1
-    #                   e.add(lemma)
-    #                   if tokens >= 10:
-    #                       types = float(len(e))
-    #                       ttr = float(types / tokens)
-    #                       if ttr < target_ttr:
-    #                           factor_lengths.append(tokens)
-    #                           outfile.write(f"{n},{tokens},{ttr}\n")
-    #                           break
-    #               break
-    #       sum_of_factors = sum(factor_lengths)
-    #       number_of_factors = float(len(factor_lengths))
-    #       mtld_wrap = float(sum_of_factors / number_of_factors)
-    #       # return mtld_wrap
-    #     return (mtld_wrap, number_of_factors, mean(factor_lengths))
-
-
-    # def get_mtld_wrap_jarvis_rs(self):
-    #     return lex_div_operationalizations.get_mtld_wrap_jarvis_rs(self.in_list)
 
     ### helper functions for HDD ###
     ### lifted from Kris Kyle's lexical_diversity Python module:
@@ -150,26 +97,26 @@ class LexDivJarvis:
 
     def get_hdd(self, sample_size = 42):
         prob_sum = 0.0
-        ntokens = len(self.in_list)
-        types_list = list(set(self.in_list))
-        frequency_dict = Counter(self.in_list)
+        ntokens = len(self.intokens)
+        types_list = list(set(self.intokens))
+        frequency_dict = Counter(self.intokens)
         for items in types_list:
             prob = self.hyper(0, sample_size, ntokens, frequency_dict[items]) #random sample is 42 items in length
             prob_sum += prob
         return prob_sum 
 
     def check_spelling(self):
-        self.in_list
+        """Probably delete this, as this should really be a preprocessing step performed beforehand."""
+        self.intokens
         spell = SpellChecker()
-        misspelled = spell.unknown(self.in_list)
-        for i in range(len(self.in_list)):
-            if self.in_list[i] in misspelled:
-                self.in_list[i] = spell.correction(self.in_list[i])
-
+        misspelled = spell.unknown(self.intokens)
+        for i in range(len(self.intokens)):
+            if self.intokens[i] in misspelled:
+                self.intokens[i] = spell.correction(self.intokens[i])
 
     def get_evenness(self):
         word_counts = {}
-        for word in self.in_list:
+        for word in self.intokens:
             word_counts[word] = word_counts.get(word, 0) + 1
         values = list(word_counts.values())
         std_dev = stdev(values)
@@ -178,16 +125,14 @@ class LexDivJarvis:
     def get_distance_between_tokens(self):
         """Return average distance in N words between tokens of the same type"""
         wd_index = {}
-        stopwords = ["THE", "AND"] # probably replace this with a legit stopword list (e.g. NLTK or stopwords module)
-        for i in range(len(self.in_list)):
-            cur_wd = self.in_list[i]
+        stopwords = ["THE", "AND"] # replace this with a legit stopword list (e.g. NLTK or stopwords module)
+        for i in range(len(self.intokens)):
+            cur_wd = self.intokens[i]
             if cur_wd not in stopwords:
-                # print(cur_wd)
                 if cur_wd not in wd_index:
                     wd_index[cur_wd] = [i]
                 else:
                     wd_index[cur_wd].append(i)
-
         numerator = 0
         num_of_diff = 0
         for k, v in wd_index.items():
@@ -195,8 +140,7 @@ class LexDivJarvis:
                 for sub_i in range(len(v)):
                     if sub_i > 0:
                         numerator += (v[sub_i] - v[sub_i - 1])
-                        num_of_diff += 1
-        
+                        num_of_diff += 1      
         return numerator / num_of_diff
 
 ### end class definition ###
