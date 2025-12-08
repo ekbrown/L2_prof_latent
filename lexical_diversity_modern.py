@@ -2,6 +2,7 @@ from collections import Counter
 # import lex_div_operationalizations
 from statistics import mean
 from spellchecker import SpellChecker
+from statistics import stdev
 
 
 class LexDivModern:
@@ -157,10 +158,6 @@ class LexDivModern:
             prob_sum += prob
         return prob_sum 
 
-    def get_evenness(self):
-        # get evenness
-        pass
-
     def check_spelling(self):
         self.in_list
         spell = SpellChecker()
@@ -168,6 +165,15 @@ class LexDivModern:
         for i in range(len(self.in_list)):
             if self.in_list[i] in misspelled:
                 self.in_list[i] = spell.correction(self.in_list[i])
+
+
+    def get_evenness(self):
+        word_counts = {}
+        for word in self.in_list:
+            word_counts[word] = word_counts.get(word, 0) + 1
+        values = list(word_counts.values())
+        std_dev = stdev(values)
+        return std_dev
 
 
 ### end class definition ###
