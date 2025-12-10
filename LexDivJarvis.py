@@ -3,7 +3,7 @@ from collections import Counter
 from statistics import mean
 from spellchecker import SpellChecker
 from statistics import stdev
-
+from math import log
 
 class LexDivJarvis:
     """Pass in a list of already tokenized words"""
@@ -13,6 +13,11 @@ class LexDivJarvis:
     def get_ttr(self, in_wds):
         return len(set(in_wds)) / len(in_wds)
 
+    def get_maas(self):
+        n_tokens = len(self.intokens)
+        n_types = len(set(self.intokens))
+        return (log(n_tokens) - log(n_types)) / (log(n_tokens)**2)
+        
     def get_mattr(self, window_span = 50):
         n_wds = len(self.intokens)
         if n_wds <= window_span:
